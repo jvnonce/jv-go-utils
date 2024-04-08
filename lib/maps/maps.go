@@ -24,6 +24,23 @@ func New() M {
 	return make(M)
 }
 
+// Map constructor with map[string]any as source
+func NewMap(source map[string]interface{}) M {
+	m := New()
+	m.FromMap(source)
+	return m
+}
+
+// Map constructor with []byte as source. Return nil if error
+func NewBytes(source []byte) M {
+	m := New()
+	err := m.Scan(source)
+	if err != nil {
+		return nil
+	}
+	return m
+}
+
 // Copy map from source
 func (m M) FromMap(source map[string]interface{}) {
 	for key, value := range source {
