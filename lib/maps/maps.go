@@ -19,6 +19,18 @@ type Mapping interface {
 // Add-on for map
 type M map[string]interface{}
 
+// Map constructor
+func New() M {
+	return make(M)
+}
+
+// Copy map from source
+func (m M) FromMap(source map[string]interface{}) {
+	for key, value := range source {
+		m[key] = value
+	}
+}
+
 // Scanner for map
 func (m *M) Scan(value interface{}) error {
 	if value == nil {

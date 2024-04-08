@@ -1,4 +1,4 @@
-package querybuilder
+package qb
 
 import (
 	"database/sql"
@@ -34,32 +34,123 @@ type builder struct {
 	isManualSQL bool
 }
 
+// Simple query builder interface for PostgreSQL
 type QueryBuilder interface {
+	// Prepares plain sql
 	SQL(sql string, args ...any) QueryBuilder
+
+	// Alias for table
+	//
+	// Ex.: qb.Select("users").Alias("u")
 	Alias(alias string) QueryBuilder
+
+	// Prepares select query
+	//
+	// Ex.: qb.Select("users").Alias("u")
 	Select(table string) QueryBuilder
+
+	// Prepares insert query
+	//
+	// Ex.: qb.Insert("users").Columns("name", "email").Parameters("jv", "jv19841202@gmail.com")
 	Insert(table string) QueryBuilder
+
+	// Prepares update query
+	//
+	// Ex.: qb.Update("users").Columns("name", "email").Parameters("jv", "jv19841202@gmail.com").Where("name=?", "jv")
 	Update(table string) QueryBuilder
+
+	// Prepares delete query
+	//
+	// Ex.: qb.Delete("users").Where("name=?", "jv")
 	Delete(table string) QueryBuilder
+
+	// Enumerates columns for select, update or insert queries
+	//
+	// Ex.: qb.Update("users").Columns("name", "email").Parameters("jv", "jv19841202@gmail.com").Where("name=?", "jv")
 	Columns(columns ...string) QueryBuilder
+
+	// Enumerates parameters for select, update or insert queries
+	//
+	// Ex.: qb.Update("users").Columns("name", "email").Parameters("jv", "jv19841202@gmail.com").Where("name=?", "jv")
 	Parameters(params ...any) QueryBuilder
+
+	// Alternative  for select, update or insert queries
+	//
+	// Ex.: qb.Update("users").ColsWithParams(jvm.M{"name": "jv", "email": "jv19841202@gmail.com"}.Where("name=?", "jv")
 	ColsWithParams(in jvm.M) QueryBuilder
+
+	// Where string with parameters
+	//
+	// Ex.: qb.Update("users").Columns("name", "email").Parameters("jv", "jv19841202@gmail.com").Where("name=?", "jv")
 	Where(where string, args ...any) QueryBuilder
+
+	// Join query to the select query
+	//
+	// Ex.: qb.Select("users").Alias("u").Join("INNER", "profile", "p", "u.id=p.user_id")
 	Join(join string, tableName string, aliasName string, condition string) QueryBuilder
+
+	// Inner join query table to the select query
+	//
+	// Ex.: qb.Select("users").Alias("u").InnerJoin("profile", "p", "u.id=p.user_id")
 	InnerJoin(tableName string, aliasName string, condition string) QueryBuilder
+
+	// Left join query table to the select query
+	//
+	// Ex.: qb.Select("users").Alias("u").LeftJoin("profile", "p", "u.id=p.user_id")
 	LeftJoin(tableName string, aliasName string, condition string) QueryBuilder
+
+	// Right join query table to the select query
+	//
+	// Ex.: qb.Select("users").Alias("u").RightJoin("profile", "p", "u.id=p.user_id")
 	RightJoin(tableName string, aliasName string, condition string) QueryBuilder
+
+	// Order results of select query
+	//
+	// Ex.: qb.Select("users").OrderBy("name", "ASC")
 	OrderBy(column string, direction string) QueryBuilder
+
+	// Grouping results of select query
+	//
+	// Ex.: qb.Select("users").Columns("id", "MAX(account) AS max_acc").GroupBy("id").Having("max_acc")
 	GroupBy(args ...string) QueryBuilder
+
+	// Having clause of select query
+	//
+	// Ex.: qb.Select("users").Columns("id", "MAX(account) AS max_acc").GroupBy("id").Having("max_acc")
 	Having(having string, args ...any) QueryBuilder
+
+	// Limit clause for select query
+	//
+	// Ex.: qb.Select("users").Limit(10).Offset(5)
 	Limit(limit int) QueryBuilder
+
+	// Offset clause for select query
+	//
+	// Ex.: qb.Select("users").Limit(10).Offset(5)
 	Offset(offset int) QueryBuilder
+
+	// Executes query and returns first row
+	//
+	// Ex.: qb.Select("users").Where("id=?", 5).Row()
 	Row() (jvm.M, error)
+
+	// Executes query and returns slice of rows map column/value
+	//
+	// Ex.: qb.Select("users").Where("id > ?", 5).Rows()
 	Rows() ([]jvm.M, error)
+
+	// Executes insert query and returns inserted row identificator with name colID
+	//
+	// Ex.: qb.Insert("users").Columns("name", "email").Parameters("jv", "jv19841202@gmail.com").ExecReturnID()
 	ExecReturnID(colID string) (interface{}, error)
+
+	// Executes insert or update query
+	//
+	// Ex.: qb.Update("users").Columns("name", "email").Parameters("jv", "jv19841202@gmail.com").Where("name=?", "jv").Exec()
 	Exec() error
 }
 
+// Constuctor for simple query builder
 func New(db *sql.DB) QueryBuilder {
 	return &builder{
 		db:          db,

@@ -1,11 +1,16 @@
 package chains
 
-func ChainForEach[A any](collection []A, chainfunc func(int, A)) {
+// Applies function for the collection.
+// If chainfunc returns false, chain will be stopped
+func ChainForEach[A any](collection []A, chainfunc func(int, A) bool) {
 	for i, v := range collection {
-		chainfunc(i, v)
+		if chainfunc(i, v) {
+			return
+		}
 	}
 }
 
+// Applies function for the collection. Returns collection of the same type
 func ChainMap[A any](collection []A, chainfunc func(int, A) A) []A {
 	result := make([]A, len(collection))
 	for i, v := range collection {
@@ -14,7 +19,8 @@ func ChainMap[A any](collection []A, chainfunc func(int, A) A) []A {
 	return result
 }
 
-func ChainTransform[A any, B any](collection []A, chainfunc func(int, A) B) []B {
+// Applies function for the collection. Returns collection of another type
+func ChainMapTransform[A, B any](collection []A, chainfunc func(int, A) B) []B {
 	result := make([]B, len(collection))
 	for i, v := range collection {
 		result[i] = chainfunc(i, v)
@@ -22,6 +28,7 @@ func ChainTransform[A any, B any](collection []A, chainfunc func(int, A) B) []B 
 	return result
 }
 
+// Applies accumulative function to the collection
 func ChainReduce[A, B any](collection []A, accumulator func(B, A) B, initialValue B) B {
 	var result = initialValue
 	for _, x := range collection {
@@ -30,6 +37,7 @@ func ChainReduce[A, B any](collection []A, accumulator func(B, A) B, initialValu
 	return result
 }
 
+// Searching value in the collection
 func ChainExists[A comparable](collection []A, value A) bool {
 	for _, v := range collection {
 		if v == value {
@@ -37,4 +45,14 @@ func ChainExists[A comparable](collection []A, value A) bool {
 		}
 	}
 	return false
+}
+
+// Searching value in the collection and returns index of element or -1 if not found
+func ChainIndexOf[A comparable](collection []A, value A) int {
+	for index, v := range collection {
+		if v == value {
+			return index
+		}
+	}
+	return -1
 }
